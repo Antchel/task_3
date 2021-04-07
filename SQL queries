@@ -1,0 +1,67 @@
+1. Вывести 10 клиентов (id, имя, номер телефона, компания),
+которых обслужлуживают сотрудники старше 50 лет,
+оплативших музыку в любом жанре кроме Rock, выходные данные должны быть отсортированы
+по городу клиента в алфавитном порядке и емейлу в обратном.
+
+    SELECT DISTINCT c.CustomerId, c.FirstName, c.Phone, c.Company
+    FROM Customer as c
+    INNER JOIN Employee e ON c.SupportRepId = e.EmployeeId
+    AND e.BirthDate >= DATE('now', '-50 years')
+    INNER JOIN Invoice i ON c.CustomerId = i.CustomerId
+    INNER JOIN InvoiceLine il ON i.InvoiceId = il.InvoiceId
+    INNER JOIN Track t ON t.TrackId = il.TrackId
+    WHERE t.GenreId != 1
+    ORDER BY c.City ASC, c.Email DESC
+    LIMIT 10
+
+2. Вывести список пользователей (полное имя, телефон) с указанием руководителя (полное имя, телефон).
+
+    SELECT c.FirstName || ' ' || c.LastName, c.Phone, e.FirstName || ' ' || e.LastName, e.Phone
+    FROM Customer c
+    INNER JOIN Employee e ON c.SupportRepId = e.EmployeeId
+
+3. Вывести отсортированный список клиентов (имя, телефон) оплативших самые дорогие музыкальные треки.
+
+    SELECT DISTINCT c.FirstName , c.Phone
+    FROM Customer c
+    INNER JOIN Invoice i ON c.CustomerId = i.CustomerId
+    INNER JOIN InvoiceLine il ON i.InvoiceId = il.InvoiceId
+    WHERE il.UnitPrice = (SELECT MAX(UnitPrice)
+                            FROM InvoiceLine)
+    ORDER BY c.FirstName ASC
+
+4. Вывести покупателей (полное имя, номер телефона) которые что либо покупали,
+ проживающих в одном городе, если их кол-во в городе больше 1.
+
+    SELECT DISTINCT c.FirstName || ' ' || c.LastName, c.Phone
+    FROM Customer c
+    INNER JOIN Invoice i ON i.CustomerId = c.CustomerId
+    WHERE i.total > 0 AND c.City IN (Select c.City
+            FROM Customer c
+            GROUP BY (c.City)
+            HAVING count(c.City) > 1)
+
+5. Вывести топ 3 самых платежеспособных города за все время.
+
+    SELECT i.BillingCity
+    FROM Invoice i
+    GROUP BY i.BillingCity
+    ORDER BY SUM(i.total) DESC
+    LIMIT 3
+
+6. Вывести самый популярный, на основании кол-ва продаж,
+жанр (название) и все треки в нем (название, альбом, исполнитель).
+
+    SELECT g. Name, t.Name, t.Composer, a.Title
+    FROM Track t
+    INNER JOIN Album a ON a.AlbumId = t.AlbumId
+    INNER JOIN Genre g ON t.GenreId = g.GenreId
+    WHERE t.GenreId = (
+                    SELECT g.GenreId
+                    from Track t
+                    INNER JOIN InvoiceLine il ON t.TrackId = il.TrackId
+                    INNER JOIN Genre g ON t.GenreId = g.GenreId
+                    GROUP BY g.Name
+                    ORDER BY SUM(t.UnitPrice*il.Quantity) DESC
+                    LIMIT 1)
+    ORDER BY t.Composer ASC
