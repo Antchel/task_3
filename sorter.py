@@ -27,7 +27,7 @@ def main(src_dir: str, dst_dir: str) -> None:
             for file_name in files_list:
                 audio_file = eyed3.load(file_name)
                 title = audio_file.tag.title.strip() if audio_file.tag.title else None
-                singer = audio_file.tag.singer.strip() if audio_file.tag.singer else None
+                singer = audio_file.tag.artist.strip() if audio_file.tag.artist else None
                 album = audio_file.tag.album.strip() if audio_file.tag.album else None
 
                 new_filename = generate_new_name(title, singer, album)
