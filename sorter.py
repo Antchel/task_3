@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: cp1251 -*-
 
 import os
 import click
@@ -18,18 +19,22 @@ def main(src_dir: str, dst_dir: str) -> None:
     """[Author - Golovenko Anton] MP3 files sorter program. 2021 (c)"""
 
     eyed3.log.setLevel("ERROR")
-    source_path_exists = os.path.exists(src_dir)
-    if source_path_exists:
-        files = os.listdir(src_dir)
+    if os.path.exists(src_dir):
+        files = os.listdir(u'%s' %src_dir)
         files_list = list(filter(lambda x: x.endswith('.mp3'), files))
         if files_list:
-            # если файлы в списке есть, обрабатываем каждый из них
             for file_name in files_list:
-                audio_file = eyed3.load(file_name)
-                title = audio_file.tag.title.strip() if audio_file.tag.title else None
-                singer = audio_file.tag.artist.strip() if audio_file.tag.artist else None
-                album = audio_file.tag.album.strip() if audio_file.tag.album else None
-
+                try:
+                    audio_file = eyed3.load(file_name)
+                    title = audio_file.tag.title.strip() if audio_file.tag.title else None
+                    singer = audio_file.tag.artist.strip() if audio_file.tag.artist else None
+                    album = audio_file.tag.album.strip() if audio_file.tag.album else None
+                    album.decode("UTF-8")
+                except AttributeError as e:
+                    print(f'Something wrong with file: {file_name}')
+                except PermissionError as e:
+                    print(f'Have no right to change file: {file_name}')
+                    continue
                 new_filename = generate_new_name(title, singer, album)
                 if new_filename is None:
                     new_filename = file_name
