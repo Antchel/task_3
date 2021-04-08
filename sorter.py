@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: cp1251 -*-
+# -*- coding: utf-8 -*-
 
 import os
 import click
@@ -20,7 +20,7 @@ def main(src_dir: str, dst_dir: str) -> None:
 
     eyed3.log.setLevel("ERROR")
     if os.path.exists(src_dir):
-        files = os.listdir(u'%s' %src_dir)
+        files = os.listdir(src_dir)
         files_list = list(filter(lambda x: x.endswith('.mp3'), files))
         if files_list:
             for file_name in files_list:
@@ -29,7 +29,7 @@ def main(src_dir: str, dst_dir: str) -> None:
                     title = audio_file.tag.title.strip() if audio_file.tag.title else None
                     singer = audio_file.tag.artist.strip() if audio_file.tag.artist else None
                     album = audio_file.tag.album.strip() if audio_file.tag.album else None
-                    album.decode("UTF-8")
+
                 except AttributeError as e:
                     print(f'Something wrong with file: {file_name}')
                 except PermissionError as e:
